@@ -1,0 +1,17 @@
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+!**/.env.example
+**/.DS_Store
+.git
+.github
+coverage
+docs
+tests
+circuits
+backend/uploads
+working-functionalities
+_transfer.tgz
+_to_delete
+deploy

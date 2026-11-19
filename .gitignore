@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env
+backend/.env
+frontend/.env.local
+coverage/
+circuits/build/
+circuits/*.ptau
+circuits/bin/
+frontend/public/zkp/jwt_usc_main_final.zkey
+.env.production
+_transfer.tgz
+_to_delete/
+backend/uploads/

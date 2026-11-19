@@ -1,0 +1,85 @@
+# Production stack: Caddy (HTTPS) -> Next.js frontend + Express backend -> Postgres.
+#
+#   cp .env.production.example .env.production   # fill in values
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+#
+# Only Caddy publishes ports (80/443). Postgres and the app containers are on the private network.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env.production}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+      - backend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_DEMO_MODE: ${DEMO_MODE:-true}
+        NEXT_PUBLIC_LOG_MODE: disabled
+        NEXT_PUBLIC_USE_JWT_ZK_LOGIN: "false"
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    image: shopsc-frontend
+    restart: unless-stopped
+    init: true
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: shopsc-backend
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      DB_URL: postgresql://shopsc:${POSTGRES_PASSWORD}@postgres:5432/shop_sc
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env.production}
+      JWT_EXPIRY: ${JWT_EXPIRY:-12h}
+      DEMO_MODE: ${DEMO_MODE:-true}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      LOG_MODE: ${LOG_MODE:-basic}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      SIGHTENGINE_API_USER: ${SIGHTENGINE_API_USER:-}
+      SIGHTENGINE_API_SECRET: ${SIGHTENGINE_API_SECRET:-}
+    volumes:
+      - uploads:/app/backend/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shopsc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.production}
+      POSTGRES_DB: shop_sc
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopsc -d shop_sc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pg-data:
+  uploads:
+  caddy-data:
+  caddy-config:
