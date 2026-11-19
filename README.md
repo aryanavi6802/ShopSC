@@ -1,5 +1,20 @@
-# shop-sc
+# Shop-SC
+
+[![CI/CD](https://github.com/aryanavi6802/ShopSC/actions/workflows/ci.yml/badge.svg)](https://github.com/aryanavi6802/ShopSC/actions/workflows/ci.yml)
+
 Privacy-preserving USC-only student marketplace: ZKP-based access, cross-session identity, no PII stored.
+
+**Live demo: https://3-136-222-27.sslip.io**. Click the profile icon, then **"Try the demo (no USC email needed)"**. Your browser creates an anonymous Semaphore identity and a zero-knowledge proof; the server only ever sees the proof.
+
+| Layer | Stack |
+|---|---|
+| Frontend | Next.js 14 (React), in-browser ZK proofs with Semaphore + snarkjs |
+| Backend | Express, PostgreSQL, JWT sessions keyed by a pseudonymous ID |
+| AI | "Tommy Trojan" marketplace assistant on Groq (Llama 3.3 70B) |
+| Infra | AWS EC2 (t3.micro), Docker Compose, Caddy (automatic HTTPS), Elastic IP |
+| CI/CD | GitHub Actions: Jest + Supertest API tests against Postgres, Next.js build, Docker image builds, SSH deploy to EC2 |
+
+Built as a USC team project; deployment, demo mode, API tests and CI/CD by [Aryan Avinash Sawant](https://github.com/aryanavi6802).
 
 ## Core guarantees
 * Enrollment: Google Sign-In (@usc.edu) or dev email; backend verifies token but never stores email or Google `sub`.

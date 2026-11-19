@@ -14,6 +14,19 @@ Time: about 45 minutes. Cost: one t3.micro + its public IP (see step 1).
 
 ---
 
+## Fast path: one script
+
+With the AWS CLI signed in (`aws login`, or from **AWS CloudShell**, which is already signed in) and the GitHub CLI
+logged in (`gh auth login`), steps 2–4 and 6 are a single command:
+
+```bash
+./deploy/aws-provision.sh
+```
+
+It creates the key pair, security group, Elastic IP and instance, the instance installs itself from this repo on
+first boot, and the GitHub Actions secrets are set so pushes to `main` redeploy. The manual steps below explain
+each piece.
+
 ## 1. Billing safety first (10 min)
 
 1. Sign in as the root user and turn on **MFA** (IAM → Security credentials).
